@@ -1,0 +1,91 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    background-color: #333;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    color: white;
+}
+
+h1 {
+    color: #f5a623;
+    text-align: center;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+input, select {
+    width: 100%;
+    padding: 8px;
+    border: none;
+    border-radius: 5px;
+    background-color: #444;
+    color: white;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #f5a623;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #e69520;
+}
+
+.error {
+    background-color: #ffcc00;
+    color: black;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+.result {
+    margin-top: 20px;
+    padding: 15px;
+    border: 2px solid #f5a623;
+    border-radius: 8px;
+    background: linear-gradient(145deg, #444, #555); /* Gradient background */
+    box-shadow: 0 0 15px rgba(245, 166, 35, 0.3); /* Glowing effect with #f5a623 */
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.result:hover {
+    transform: translateY(-3px); /* Slight lift on hover */
+    box-shadow: 0 0 20px rgba(245, 166, 35, 0.5); /* Stronger glow on hover */
+}
+
+.result h2 {
+    margin: 0;
+    font-size: 18px;
+    color: #f5a623;
+    text-shadow: 0 0 5px rgba(245, 166, 35, 0.5); /* Glowing text shadow */
+    font-weight: 600;
+}

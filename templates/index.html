@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Calorie Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(45deg, #0d1b2a, #1b263b, #0d1b2a);
+            background-size: 200% 200%;
+            animation: gradientShift 15s ease infinite;
+            color: #e0e0e0;
+            font-family: 'Orbitron', sans-serif;
+            display: flex;
+            justify-content: center;
+            padding: 10px;
+            min-height: 100vh;
+            margin: 0;
+        }
+        @keyframes gradientShift {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .container {
+            background: rgba(13, 27, 42, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            width: 620px;
+            max-width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(0,255,255,0.2);
+            border: 1px solid rgba(0,255,255,0.3);
+            position: relative;
+        }
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #00ffff);
+            z-index: -1;
+            border-radius: 12px;
+            filter: blur(8px);
+            opacity: 0.7;
+            animation: borderGlow 5s linear infinite;
+        }
+        @keyframes borderGlow {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        h1 {
+            color: #00ffff;
+            text-align: center;
+            font-size: 20px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(0,255,255,0.8), 0 0 20px rgba(0,255,255,0.5);
+            animation: flicker 3s infinite alternate;
+        }
+        @keyframes flicker {
+            0%, 18%, 22%, 25%, 53%, 57%, 100% {
+                text-shadow: 0 0 10px rgba(0,255,255,0.8), 0 0 20px rgba(0,255,255,0.5);
+            }
+            20%, 24%, 55% {
+                text-shadow: 0 0 5px rgba(0,255,255,0.4), 0 0 10px rgba(0,255,255,0.2);
+            }
+        }
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .form-group {
+            margin-bottom: 2px;
+        }
+        label {
+            display: block;
+            margin-bottom: 3px;
+            font-size: 12px;
+            color: #b0bec5;
+            text-shadow: 0 0 5px rgba(176,190,197,0.3);
+        }
+        input, select {
+            width: 100%;
+            padding: 4px 6px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(0,255,255,0.2);
+            border-radius: 5px;
+            color: #e0e0e0;
+            font-size: 13px;
+            height: 30px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 0 5px rgba(0,255,255,0.1);
+            font-family: 'Orbitron', sans-serif;
+        }
+        input:hover, select:hover {
+            border-color: #00ffff;
+            box-shadow: 0 0 10px rgba(0,255,255,0.3);
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #00ffff;
+            box-shadow: 0 0 15px rgba(0,255,255,0.5);
+            background: rgba(255,255,255,0.1);
+        }
+        /* Range hint styling — always visible below each field */
+        .range-hint {
+            display: block;
+            margin-top: 3px;
+            font-size: 10px;
+            color: rgba(0, 255, 255, 0.45);
+            letter-spacing: 0.03em;
+            padding-left: 2px;
+            transition: color 0.3s ease;
+        }
+        .form-group:focus-within .range-hint {
+            color: rgba(0, 255, 255, 0.85);
+            text-shadow: 0 0 6px rgba(0,255,255,0.5);
+        }
+        /* BMI auto-calc field */
+        input[readonly] {
+            background: rgba(0, 255, 255, 0.06);
+            border: 1px solid rgba(0, 255, 255, 0.45);
+            color: #00ffff;
+            cursor: default;
+            font-weight: 700;
+            box-shadow: inset 0 0 8px rgba(0,255,255,0.15);
+        }
+        input[readonly]:hover, input[readonly]:focus {
+            border-color: rgba(0,255,255,0.6);
+            box-shadow: 0 0 12px rgba(0,255,255,0.35);
+            background: rgba(0,255,255,0.08);
+        }
+        .bmi-badge {
+            display: inline-block;
+            font-size: 9px;
+            background: rgba(0,255,255,0.15);
+            color: #00ffff;
+            border: 1px solid rgba(0,255,255,0.3);
+            border-radius: 3px;
+            padding: 1px 4px;
+            margin-left: 5px;
+            vertical-align: middle;
+            letter-spacing: 0.05em;
+        }
+        select option {
+            background: #0d1b2a;
+            color: #e0e0e0;
+        }
+        button {
+            grid-column: span 2;
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(90deg, #00ffff, #ff00ff);
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            text-shadow: 0 0 5px rgba(0,255,255,0.8);
+            box-shadow: 0 0 10px rgba(0,255,255,0.3);
+            margin-top: 8px;
+            transition: all 0.3s ease;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 0.05em;
+        }
+        button:hover {
+            background: linear-gradient(90deg, #ff00ff, #00ffff);
+            box-shadow: 0 0 20px rgba(0,255,255,0.6);
+            transform: scale(1.02);
+        }
+        .error {
+            grid-column: span 2;
+            background: rgba(255,82,82,0.2);
+            color: #ff5252;
+            padding: 6px 10px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            border: 1px solid rgba(255,82,82,0.3);
+            text-shadow: 0 0 5px rgba(255,82,82,0.5);
+        }
+        .result {
+            grid-column: span 2;
+            margin-top: 10px;
+            padding: 14px;
+            border: 2px solid rgba(0,255,255,0.5);
+            border-radius: 8px;
+            background: linear-gradient(145deg, rgba(0,255,255,0.07), rgba(255,0,255,0.07));
+            box-shadow: 0 0 20px rgba(0,255,255,0.25);
+            text-align: center;
+        }
+        .result h2 {
+            color: #00ffff;
+            font-size: 16px;
+            text-shadow: 0 0 10px rgba(0,255,255,0.8);
+            margin: 0;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%   { text-shadow: 0 0 10px rgba(0,255,255,0.8); }
+            50%  { text-shadow: 0 0 22px rgba(0,255,255,1); }
+            100% { text-shadow: 0 0 10px rgba(0,255,255,0.8); }
+        }
+        /* BMI live indicator strip */
+        .bmi-category {
+            font-size: 10px;
+            margin-top: 3px;
+            padding-left: 2px;
+            letter-spacing: 0.03em;
+            font-weight: 700;
+            transition: color 0.4s ease;
+        }
+        @media (max-width: 600px) {
+            form { grid-template-columns: 1fr; }
+            button, .error, .result { grid-column: span 1; }
+            .container { width: 90%; }
+        }
+        /* ── Charts Section ───────────────────────────────────────────── */
+        .charts-section {
+            margin-top: 18px;
+            border-top: 1px solid rgba(0,255,255,0.2);
+            padding-top: 14px;
+        }
+        .charts-title {
+            color: #00ffff;
+            font-size: 13px;
+            text-align: center;
+            margin: 0 0 14px;
+            letter-spacing: 0.08em;
+            text-shadow: 0 0 10px rgba(0,255,255,0.6);
+        }
+        .stats-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .stat-card {
+            background: rgba(0,255,255,0.06);
+            border: 1px solid rgba(0,255,255,0.2);
+            border-radius: 8px;
+            padding: 10px 6px;
+            text-align: center;
+        }
+        .stat-card.primary { border-color: rgba(0,255,255,0.5); background: rgba(0,255,255,0.1); }
+        .stat-val {
+            font-size: 18px;
+            font-weight: 700;
+            color: #00ffff;
+            text-shadow: 0 0 8px rgba(0,255,255,0.7);
+            line-height: 1.1;
+        }
+        .stat-card.primary .stat-val { font-size: 22px; color: #00ffff; }
+        .stat-lbl {
+            font-size: 9px;
+            color: #b0bec5;
+            margin-top: 3px;
+            letter-spacing: 0.06em;
+        }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .chart-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(0,255,255,0.15);
+            border-radius: 8px;
+            padding: 12px 10px 8px;
+        }
+        .chart-card.full { grid-column: span 2; }
+        .chart-card h4 {
+            color: #00ffff;
+            font-size: 10px;
+            text-align: center;
+            margin: 0 0 8px;
+            letter-spacing: 0.06em;
+            text-shadow: 0 0 6px rgba(0,255,255,0.4);
+        }
+        .chart-card canvas { display: block; }
+        /* ── Model Selector ─────────────────────────────────────── */
+        .model-selector {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .model-card {
+            position: relative;
+            cursor: pointer;
+        }
+        .model-card input[type=radio] { display: none; }
+        .model-card label {
+            display: block;
+            padding: 8px 6px;
+            background: rgba(0,255,255,0.04);
+            border: 1px solid rgba(0,255,255,0.18);
+            border-radius: 7px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-size: 9px;
+            color: #b0bec5;
+            letter-spacing: 0.04em;
+            margin-bottom: 0;
+        }
+        .model-card label .mc-name {
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            color: #e0e0e0;
+            margin-bottom: 4px;
+        }
+        .model-card label .mc-r2 {
+            display: block;
+            font-size: 11px;
+            color: #00ffff;
+            text-shadow: 0 0 6px rgba(0,255,255,0.5);
+            margin: 2px 0;
+        }
+        .model-card input:checked + label {
+            background: rgba(0,255,255,0.14);
+            border-color: #00ffff;
+            box-shadow: 0 0 14px rgba(0,255,255,0.35);
+            color: #fff;
+        }
+        .model-card label:hover {
+            border-color: rgba(0,255,255,0.55);
+            background: rgba(0,255,255,0.09);
+        }
+        .best-badge {
+            position: absolute;
+            top: -8px; right: -6px;
+            background: linear-gradient(135deg, #ffca28, #ff7043);
+            color: #0d1b2a;
+            font-size: 8px;
+            font-weight: 700;
+            padding: 2px 5px;
+            border-radius: 4px;
+            letter-spacing: 0.05em;
+            box-shadow: 0 0 8px rgba(255,202,40,0.6);
+            z-index: 1;
+        }
+        .model-selector-title {
+            font-size: 11px;
+            color: #00ffff;
+            letter-spacing: 0.07em;
+            margin-bottom: 8px;
+            text-shadow: 0 0 6px rgba(0,255,255,0.4);
+        }
+        /* ── Model Metrics Panel (in results) ─────────────────────── */
+        .metrics-panel {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin: 12px 0;
+            padding: 12px;
+            background: rgba(0,255,255,0.04);
+            border: 1px solid rgba(0,255,255,0.18);
+            border-radius: 8px;
+        }
+        .metric-box {
+            text-align: center;
+            padding: 8px 4px;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.03);
+        }
+        .metric-box .mv {
+            font-size: 14px;
+            font-weight: 700;
+            color: #00ffff;
+            text-shadow: 0 0 8px rgba(0,255,255,0.6);
+        }
+        .metric-box .ml {
+            font-size: 9px;
+            color: #b0bec5;
+            margin-top: 3px;
+            letter-spacing: 0.05em;
+        }
+        .metrics-panel-title {
+            font-size: 10px;
+            color: #b0bec5;
+            letter-spacing: 0.06em;
+            margin-bottom: 4px;
+        }
+        @media (max-width: 600px) {
+            .charts-grid { grid-template-columns: 1fr; }
+            .chart-card.full { grid-column: span 1; }
+            .stats-strip { grid-template-columns: repeat(2,1fr); }
+            .model-selector { grid-template-columns: 1fr 1fr; }
+            .metrics-panel { grid-template-columns: repeat(3,1fr); }
+        }
+        
+        /* ── Loading Overlay ────────────────────────────────────── */
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(13, 27, 42, 0.85);
+            backdrop-filter: blur(5px);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(0, 255, 255, 0.2);
+            border-top: 4px solid #00ffff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 0 15px rgba(0,255,255,0.4);
+            margin-bottom: 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-text {
+            color: #00ffff;
+            font-size: 14px;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 8px rgba(0,255,255,0.6);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
+    </style>
+
+
+</head>
+<body>
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Analyzing & Predicting...</div>
+    </div>
+    <div class="container">
+        <h1>Gym Calorie Calculator</h1>
+        {% if error %}
+            <div class="error" style="display:block;">{{ error }}</div>
+        {% endif %}
+        <form id="main-form" method="POST" action="/">
+            <!-- ── Model Selector ─────────────────────────────────────────── -->
+            <div style="grid-column: span 2; margin-bottom: 6px;">
+                <p class="model-selector-title">&#129302; SELECT PREDICTION MODEL</p>
+                <div class="model-selector">
+                    {% set metrics_map = model_metrics if model_metrics else {} %}
+                    {% for mname in model_names %}
+                    {% set is_best = (mname == best_model_name) %}
+                    {% set is_sel  = (mname == selected_model) %}
+                    {% set m = metrics_map.get(mname, {}) %}
+                    <div class="model-card">
+                        {% if is_best %}<span class="best-badge">&#9733; BEST</span>{% endif %}
+                        <input type="radio" id="model_{{ loop.index }}" name="model_name"
+                               value="{{ mname }}" {% if is_sel %}checked{% endif %}>
+                        <label for="model_{{ loop.index }}">
+                            <span class="mc-name">{{ mname }}</span>
+                            {% if m %}
+                            <span class="mc-r2">R² {{ m.r2 }}</span>
+                            <span>MAE {{ m.mae }} kcal</span>
+                            {% else %}
+                            <span style="color:#ff7043">Not trained yet</span>
+                            {% endif %}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <!-- Field 1: Age -->
+            <div class="form-group">
+                <label for="age">Age:</label>
+                <input type="number" id="age" name="age" min="1" max="120"
+                       placeholder="e.g. 25"
+                       value="{{ form_data.get('age', '') }}" required>
+                <span class="range-hint">&#9432; Range: 1 – 120 years</span>
+            </div>
+
+            <!-- Field 2: Gender -->
+            <div class="form-group">
+                <label for="gender">Gender:</label>
+                <select id="gender" name="gender" required>
+                    <option value="" {% if not form_data.get('gender') %}selected{% endif %}>Select Gender</option>
+                    <option value="Male"   {% if form_data.get('gender') == 'Male'   %}selected{% endif %}>Male</option>
+                    <option value="Female" {% if form_data.get('gender') == 'Female' %}selected{% endif %}>Female</option>
+                </select>
+                <span class="range-hint">&#9432; Options: Male / Female</span>
+            </div>
+
+            <!-- Field 3: Weight -->
+            <div class="form-group">
+                <label for="weight">Weight (kg):</label>
+                <input type="number" step="0.01" id="weight" name="weight" min="1" max="300"
+                       placeholder="e.g. 70.5"
+                       value="{{ form_data.get('weight', '') }}" required>
+                <span class="range-hint">&#9432; Range: 1 – 300 kg</span>
+            </div>
+
+            <!-- Field 4: Height -->
+            <div class="form-group">
+                <label for="height">Height (m):</label>
+                <input type="number" step="0.01" id="height" name="height" min="0.5" max="3"
+                       placeholder="e.g. 1.75"
+                       value="{{ form_data.get('height', '') }}" required>
+                <span class="range-hint">&#9432; Range: 0.5 – 3.0 m (e.g. 1.75)</span>
+            </div>
+
+            <!-- Field 5: Max BPM -->
+            <div class="form-group">
+                <label for="max_bpm">Max BPM:</label>
+                <input type="number" id="max_bpm" name="max_bpm" min="100" max="240"
+                       placeholder="e.g. 180"
+                       value="{{ form_data.get('max_bpm', '') }}" required>
+                <span class="range-hint">&#9432; Range: 100 – 240 bpm</span>
+            </div>
+
+            <!-- Field 6: Avg BPM -->
+            <div class="form-group">
+                <label for="avg_bpm">Avg BPM:</label>
+                <input type="number" id="avg_bpm" name="avg_bpm" min="60" max="200"
+                       placeholder="e.g. 140"
+                       value="{{ form_data.get('avg_bpm', '') }}" required>
+                <span class="range-hint">&#9432; Range: 60 – 200 bpm</span>
+            </div>
+
+            <!-- Field 7: Resting BPM -->
+            <div class="form-group">
+                <label for="resting_bpm">Resting BPM:</label>
+                <input type="number" id="resting_bpm" name="resting_bpm" min="30" max="120"
+                       placeholder="e.g. 65"
+                       value="{{ form_data.get('resting_bpm', '') }}" required>
+                <span class="range-hint">&#9432; Range: 30 – 120 bpm</span>
+            </div>
+
+            <!-- Field 8: Workout Type -->
+            <div class="form-group">
+                <label for="workout_type">Workout Type:</label>
+                <select id="workout_type" name="workout_type" required>
+                    <option value="" {% if not form_data.get('workout_type') %}selected{% endif %}>Select Workout Type</option>
+                    <option value="Strength" {% if form_data.get('workout_type') == 'Strength' %}selected{% endif %}>Strength</option>
+                    <option value="Cardio"   {% if form_data.get('workout_type') == 'Cardio'   %}selected{% endif %}>Cardio</option>
+                    <option value="Yoga"     {% if form_data.get('workout_type') == 'Yoga'     %}selected{% endif %}>Yoga</option>
+                    <option value="HIIT"     {% if form_data.get('workout_type') == 'HIIT'     %}selected{% endif %}>HIIT</option>
+                </select>
+                <span class="range-hint">&#9432; Options: Strength, Cardio, Yoga, HIIT</span>
+            </div>
+
+            <!-- Field 9: Fat Percentage -->
+            <div class="form-group">
+                <label for="fat_percentage">Fat Percentage (%):</label>
+                <input type="number" step="0.01" id="fat_percentage" name="fat_percentage" min="0" max="50"
+                       placeholder="e.g. 18.5"
+                       value="{{ form_data.get('fat_percentage', '') }}" required>
+                <span class="range-hint">&#9432; Range: 0 – 50 %</span>
+            </div>
+
+            <!-- Field 10: Water Intake -->
+            <div class="form-group">
+                <label for="water_intake">Water Intake (liters):</label>
+                <input type="number" step="0.01" id="water_intake" name="water_intake" min="0" max="10"
+                       placeholder="e.g. 2.5"
+                       value="{{ form_data.get('water_intake', '') }}" required>
+                <span class="range-hint">&#9432; Range: 0 – 10 liters</span>
+            </div>
+
+            <!-- Field 11: Workout Frequency -->
+            <div class="form-group">
+                <label for="workout_frequency">Workout Frequency (days/week):</label>
+                <select id="workout_frequency" name="workout_frequency" required>
+                    <option value="" {% if not form_data.get('workout_frequency') %}selected{% endif %}>Select Frequency</option>
+                    <option value="1" {% if form_data.get('workout_frequency')|string == '1' %}selected{% endif %}>1 day/week</option>
+                    <option value="2" {% if form_data.get('workout_frequency')|string == '2' %}selected{% endif %}>2 days/week</option>
+                    <option value="3" {% if form_data.get('workout_frequency')|string == '3' %}selected{% endif %}>3 days/week</option>
+                    <option value="4" {% if form_data.get('workout_frequency')|string == '4' %}selected{% endif %}>4 days/week</option>
+                    <option value="5" {% if form_data.get('workout_frequency')|string == '5' %}selected{% endif %}>5 days/week</option>
+                    <option value="6" {% if form_data.get('workout_frequency')|string == '6' %}selected{% endif %}>6 days/week</option>
+                    <option value="7" {% if form_data.get('workout_frequency')|string == '7' %}selected{% endif %}>7 days/week</option>
+                </select>
+                <span class="range-hint">&#9432; Options: 1 – 7 days per week</span>
+            </div>
+
+            <!-- Field 12: Experience Level -->
+            <div class="form-group">
+                <label for="experience_level">Experience Level:</label>
+                <select id="experience_level" name="experience_level" required>
+                    <option value="" {% if not form_data.get('experience_level') %}selected{% endif %}>Select Experience Level</option>
+                    <option value="1" {% if form_data.get('experience_level')|string == '1' %}selected{% endif %}>1 — Beginner</option>
+                    <option value="2" {% if form_data.get('experience_level')|string == '2' %}selected{% endif %}>2 — Intermediate</option>
+                    <option value="3" {% if form_data.get('experience_level')|string == '3' %}selected{% endif %}>3 — Advanced</option>
+                </select>
+                <span class="range-hint">&#9432; 1 = Beginner · 2 = Intermediate · 3 = Advanced</span>
+            </div>
+
+            <!-- Field 13: BMI — auto-calculated, readonly -->
+            <div class="form-group">
+                <label for="bmi">BMI: <span class="bmi-badge">AUTO</span></label>
+                <input type="number" step="0.01" id="bmi" name="bmi"
+                       value="{{ form_data.get('bmi', '') }}"
+                       placeholder="Fill weight &amp; height above"
+                       readonly required>
+                <span class="range-hint" id="bmi-range-hint">&#9432; Auto-filled from Weight ÷ Height²</span>
+                <span class="bmi-category" id="bmi-category"></span>
+            </div>
+
+            <!-- Field 14: Diet Type -->
+            <div class="form-group">
+                <label for="diet_type">Diet Type:</label>
+                <select id="diet_type" name="diet_type" required>
+                    <option value="" {% if not form_data.get('diet_type') %}selected{% endif %}>Select Diet Type</option>
+                    <option value="High Protein"         {% if form_data.get('diet_type') == 'High Protein'         %}selected{% endif %}>High Protein</option>
+                    <option value="Paleo"                {% if form_data.get('diet_type') == 'Paleo'                %}selected{% endif %}>Paleo</option>
+                    <option value="Keto"                 {% if form_data.get('diet_type') == 'Keto'                 %}selected{% endif %}>Keto</option>
+                    <option value="Mediterranean"        {% if form_data.get('diet_type') == 'Mediterranean'        %}selected{% endif %}>Mediterranean</option>
+                    <option value="Intermittent Fasting" {% if form_data.get('diet_type') == 'Intermittent Fasting' %}selected{% endif %}>Intermittent Fasting</option>
+                    <option value="Balanced"             {% if form_data.get('diet_type') == 'Balanced'             %}selected{% endif %}>Balanced</option>
+                    <option value="Vegan"                {% if form_data.get('diet_type') == 'Vegan'                %}selected{% endif %}>Vegan</option>
+                    <option value="Low Carb"             {% if form_data.get('diet_type') == 'Low Carb'             %}selected{% endif %}>Low Carb</option>
+                    <option value="Gluten-Free"          {% if form_data.get('diet_type') == 'Gluten-Free'          %}selected{% endif %}>Gluten-Free</option>
+                    <option value="Vegetarian"           {% if form_data.get('diet_type') == 'Vegetarian'           %}selected{% endif %}>Vegetarian</option>
+                    <option value="Low Fat"              {% if form_data.get('diet_type') == 'Low Fat'              %}selected{% endif %}>Low Fat</option>
+                </select>
+                <span class="range-hint">&#9432; 11 diet options available</span>
+            </div>
+
+            <!-- Field 15: Sleep Duration -->
+            <div class="form-group">
+                <label for="sleep_duration">Sleep Duration (hours):</label>
+                <input type="number" id="sleep_duration" name="sleep_duration" min="0" max="24"
+                       placeholder="e.g. 7"
+                       value="{{ form_data.get('sleep_duration', '') }}" required>
+                <span class="range-hint">&#9432; Range: 0 – 24 hours</span>
+            </div>
+
+            <!-- Field 16: Session Duration -->
+            <div class="form-group">
+                <label for="session_duration">Session Duration (minutes):</label>
+                <input type="number" step="0.01" id="session_duration" name="session_duration" min="1" max="600"
+                       placeholder="e.g. 60"
+                       value="{{ form_data.get('session_duration', '') }}" required>
+                <span class="range-hint">&#9432; Range: 1 – 600 minutes</span>
+            </div>
+
+            <button type="submit">Calculate Calories Burned</button>
+        </form>
+
+        
+        <div id="results-wrapper" style="display: {% if calories_burned %}block{% else %}none{% endif %};">
+
+        <!-- ── Result ──────────────────────────────────────────────────── -->
+        
+        <div class="result" id="results-anchor" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2 id="res-kcal-text">&#128293; Predicted Calories Burned: {{ calories_burned if calories_burned else '' }} kcal</h2>
+                <p id="res-model-text" style="font-size:10px;color:#b0bec5;margin:4px 0 0;">Model: {{ selected_model }}</p>
+            </div>
+
+        </div>
+
+
+        
+        <!-- ── Model Metrics Panel ───────────────────────────────────────── -->
+        <div style="margin-top:10px;">
+            <p class="metrics-panel-title">&#128202; {{ selected_model }} — Regression Metrics on Test Set</p>
+            <div class="metrics-panel">
+                <div class="metric-box">
+                    <div class="mv" id="metric-r2">{{ selected_metrics.r2 if selected_metrics else "" }}</div>
+                    <div class="ml">R² SCORE</div>
+                </div>
+                <div class="metric-box">
+                    <div class="mv" id="metric-mae">{{ selected_metrics.mae if selected_metrics else "" }}</div>
+                    <div class="ml">MAE (kcal)</div>
+                </div>
+                <div class="metric-box">
+                    <div class="mv" id="metric-rmse">{{ selected_metrics.rmse if selected_metrics else "" }}</div>
+                    <div class="ml">RMSE (kcal)</div>
+                </div>
+                <div class="metric-box">
+                    <div class="mv" id="metric-mape">{{ selected_metrics.mape if selected_metrics else "" }}%</div>
+                    <div class="ml">MAPE</div>
+                </div>
+                <div class="metric-box">
+                    <div class="mv" id="metric-evs">{{ selected_metrics.evs if selected_metrics else "" }}</div>
+                    <div class="ml">EXP. VARIANCE</div>
+                </div>
+            </div>
+        </div>
+        <!-- ── Analytics Dashboard ─────────────────────────────────────── -->
+        <div class="charts-section">
+            <p class="charts-title">&#9654; FITNESS ANALYTICS DASHBOARD</p>
+
+            <!-- Stats Strip -->
+            <div class="stats-strip">
+                <div class="stat-card primary">
+                    <div class="stat-val" id="stat-kcal">{{ calories_burned if calories_burned else "" }}</div>
+                    <div class="stat-lbl">KCAL BURNED</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" id="stat-kcal-min">{{ (calories_burned / form_data.get("session_duration", 1)) | round(1) if calories_burned else "" }}</div>
+                    <div class="stat-lbl">KCAL / MIN</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" id="stat-bmi">{{ form_data.get('bmi', '—') }}</div>
+                    <div class="stat-lbl">BMI</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" id="stat-hr-res">{{ form_data.get('max_bpm', 0) - form_data.get('resting_bpm', 0) }}</div>
+                    <div class="stat-lbl">HR RESERVE</div>
+                </div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h4>&#128293; CALORIE GAUGE</h4>
+                    <canvas id="gaugeChart" height="200"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h4>&#128147; HEART RATE PROFILE</h4>
+                    <canvas id="hrChart" height="200"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h4>&#127947; WORKOUT TYPE COMPARISON</h4>
+                    <canvas id="workoutChart" height="200"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h4>&#9899; FITNESS RADAR</h4>
+                    <canvas id="radarChart" height="200"></canvas>
+                </div>
+                <div class="chart-card full">
+                    <h4>&#9878; BMI SCALE POSITION</h4>
+                    <canvas id="bmiChart" height="80"></canvas>
+                </div>
+                <div class="chart-card full" id="featImpContainer">
+                    <h4>&#128200; FEATURE IMPORTANCE — Which Inputs Drive Calories Most</h4>
+                    <canvas id="featImpChart" height="120"></canvas>
+                    <div id="featImpMsg" style="display: none; text-align: center; color: #ff7043; padding: 20px 0; font-size: 12px; font-weight: bold; letter-spacing: 0.05em;">
+                        &#9888; Not available for ensemble meta-model
+                    </div>
+                </div>
+                <div class="chart-card full">
+                    <h4>&#128257; SENSITIVITY — How &#177;10% Change in Each Input Shifts Calories</h4>
+                    <canvas id="sensitivityChart" height="160"></canvas>
+                </div>
+                <div class="chart-card full" id="shapContainer">
+                    <h4>&#128161; SHAP EXPLANATION — Local Feature Attribution</h4>
+                    <canvas id="shapChart" height="160"></canvas>
+                    <div id="shapMsg" style="display: none; text-align: center; color: #ff7043; padding: 20px 0; font-size: 12px; font-weight: bold; letter-spacing: 0.05em;">
+                        &#9888; Not available for ensemble meta-model
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+        <script>
+            Chart.defaults.color = '#b0bec5';
+            Chart.defaults.borderColor = 'rgba(0,255,255,0.1)';
+            Chart.defaults.font.family = "Orbitron, sans-serif";
+            Chart.defaults.font.size = 10;
+
+            let charts = {}; // Store chart instances
+
+            function renderDashboard(data) {
+                const kcal = data.calories_burned;
+                const fd = data.form_data;
+                const wt = fd.weight || 70;
+                const ht = fd.height || 1.75;
+                const bmiVal = fd.bmi || 22;
+                const maxBPM = fd.max_bpm || 180;
+                const avgBPM = fd.avg_bpm || 140;
+                const rstBPM = fd.resting_bpm || 65;
+                const fatPct = fd.fat_percentage || 20;
+                const water = fd.water_intake || 2.5;
+                const sleep = fd.sleep_duration || 7;
+                const sessMn = fd.session_duration || 60;
+                const freq = fd.workout_frequency || 3;
+                const wType = fd.workout_type || "";
+
+                // Update DOM text
+                document.getElementById('res-kcal-text').innerHTML = `&#128293; Predicted Calories Burned: ${kcal} kcal`;
+                document.getElementById('res-model-text').innerHTML = `Model: ${data.selected_model}`;
+                
+                if (data.selected_metrics) {
+                    document.getElementById('metric-r2').textContent = data.selected_metrics.r2;
+                    document.getElementById('metric-mae').textContent = data.selected_metrics.mae;
+                    document.getElementById('metric-rmse').textContent = data.selected_metrics.rmse;
+                    document.getElementById('metric-mape').textContent = data.selected_metrics.mape + "%";
+                    document.getElementById('metric-evs').textContent = data.selected_metrics.evs;
+                }
+
+                document.getElementById('stat-kcal').textContent = kcal;
+                document.getElementById('stat-kcal-min').textContent = (kcal / sessMn).toFixed(1);
+                document.getElementById('stat-bmi').textContent = bmiVal;
+                document.getElementById('stat-hr-res').textContent = maxBPM - rstBPM;
+
+                // Helper to destroy existing chart
+                function resetChart(id) {
+                    if (charts[id]) {
+                        charts[id].destroy();
+                    }
+                }
+
+                // ── 1. Calorie Gauge
+                resetChart('gauge');
+                const maxScale = Math.max(1500, kcal + 200);
+                let gColor = kcal < 300 ? '#64b5f6' : kcal < 500 ? '#69f0ae' : kcal < 800 ? '#ffca28' : '#ff7043';
+                charts['gauge'] = new Chart(document.getElementById('gaugeChart'), {
+                    type: 'doughnut',
+                    data: {
+                        datasets: [{
+                            data: [kcal, maxScale - kcal],
+                            backgroundColor: [gColor, 'rgba(255,255,255,0.04)'],
+                            borderColor: [gColor, 'rgba(0,255,255,0.08)'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: { cutout: '72%', plugins: { legend: { display: false }, tooltip: { enabled: false } }, animation: { animateRotate: true, duration: 1400 } },
+                    plugins: [{
+                        id: 'cText',
+                        afterDraw(c) {
+                            const { ctx, chartArea: { width, height, left, top } } = c;
+                            const cx = left + width / 2, cy = top + height / 2;
+                            ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                            ctx.font = 'bold 17px Orbitron,sans-serif'; ctx.fillStyle = gColor;
+                            ctx.shadowColor = gColor; ctx.shadowBlur = 14;
+                            ctx.fillText(kcal + ' kcal', cx, cy - 9);
+                            ctx.font = '8px Orbitron,sans-serif'; ctx.fillStyle = '#b0bec5'; ctx.shadowBlur = 0;
+                            ctx.fillText('CALORIES BURNED', cx, cy + 10); ctx.restore();
+                        }
+                    }]
+                });
+
+                // ── 2. Heart Rate Profile
+                resetChart('hr');
+                charts['hr'] = new Chart(document.getElementById('hrChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Resting', 'Average', 'Maximum'],
+                        datasets: [{ data: [rstBPM, avgBPM, maxBPM], backgroundColor: ['rgba(100,181,246,0.75)', 'rgba(0,255,255,0.75)', 'rgba(255,82,82,0.75)'], borderColor: ['#64b5f6', '#00ffff', '#ff5252'], borderWidth: 1.5, borderRadius: 5 }]
+                    },
+                    options: { indexAxis: 'y', plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' ' + c.raw + ' bpm' } } }, scales: { x: { min: 0, max: 250, grid: { color: 'rgba(0,255,255,0.07)' }, ticks: { color: '#b0bec5' } }, y: { grid: { display: false }, ticks: { color: '#b0bec5' } } } }
+                });
+
+                // ── 3. Workout Comparison
+                resetChart('workout');
+                const wTypes = ['Yoga', 'Cardio', 'Strength', 'HIIT'];
+                const wAvg = [250, 510, 380, 610];
+                charts['workout'] = new Chart(document.getElementById('workoutChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: wTypes,
+                        datasets: [
+                            { label: 'Avg kcal/hr', data: wAvg, backgroundColor: wTypes.map(t => t === wType ? 'rgba(0,255,255,0.75)' : 'rgba(0,255,255,0.18)'), borderColor: wTypes.map(t => t === wType ? '#00ffff' : 'rgba(0,255,255,0.3)'), borderWidth: 1.5, borderRadius: 5 },
+                            { label: 'Your Prediction', data: wTypes.map(t => t === wType ? kcal : null), backgroundColor: 'rgba(255,0,255,0.8)', borderColor: '#ff00ff', borderWidth: 1.5, borderRadius: 5 }
+                        ]
+                    },
+                    options: { plugins: { legend: { labels: { color: '#b0bec5', boxWidth: 10, font: { size: 9 } } } }, scales: { x: { grid: { display: false }, ticks: { color: '#b0bec5' } }, y: { grid: { color: 'rgba(0,255,255,0.07)' }, ticks: { color: '#b0bec5' } } } }
+                });
+
+                // ── 4. Radar
+                resetChart('radar');
+                charts['radar'] = new Chart(document.getElementById('radarChart'), {
+                    type: 'radar',
+                    data: {
+                        labels: ['Hydration', 'Sleep', 'Body Fat', 'Frequency', 'Session', 'BMI Score'],
+                        datasets: [{ label: 'Your Profile', data: [Math.min((water / 10) * 100, 100), Math.min((sleep / 9) * 100, 100), Math.max(0, 100 - fatPct * 2), Math.min((freq / 7) * 100, 100), Math.min((sessMn / 120) * 100, 100), Math.max(0, 100 - Math.abs(bmiVal - 22) * 6)], backgroundColor: 'rgba(0,255,255,0.12)', borderColor: '#00ffff', pointBackgroundColor: '#00ffff', pointRadius: 3, borderWidth: 1.5 }]
+                    },
+                    options: { plugins: { legend: { display: false } }, scales: { r: { min: 0, max: 100, grid: { color: 'rgba(0,255,255,0.12)' }, angleLines: { color: 'rgba(0,255,255,0.15)' }, pointLabels: { color: '#b0bec5', font: { size: 9 } }, ticks: { display: false } } } }
+                });
+
+                // ── 5. BMI
+                resetChart('bmi');
+                charts['bmi'] = new Chart(document.getElementById('bmiChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['BMI'],
+                        datasets: [
+                            { label: 'Underweight <18.5', data: [18.5], backgroundColor: 'rgba(100,181,246,0.65)', borderWidth: 0 },
+                            { label: 'Normal 18.5-24.9', data: [6.4], backgroundColor: 'rgba(105,240,174,0.65)', borderWidth: 0 },
+                            { label: 'Overweight 25-29.9', data: [5], backgroundColor: 'rgba(255,202,40,0.65)', borderWidth: 0 },
+                            { label: 'Obese ≥30', data: [10], backgroundColor: 'rgba(255,112,67,0.65)', borderWidth: 0 }
+                        ]
+                    },
+                    options: { indexAxis: 'y', plugins: { legend: { position: 'bottom', labels: { color: '#b0bec5', boxWidth: 10, font: { size: 9 }, padding: 10 } }, tooltip: { enabled: false } }, scales: { x: { stacked: true, min: 0, max: 40, grid: { color: 'rgba(0,255,255,0.07)' }, ticks: { color: '#b0bec5' } }, y: { stacked: true, display: false } } },
+                    plugins: [{ id: 'bmiMark', afterDraw(c) { const { ctx, scales: { x, y } } = c; const clampedBMI = Math.min(Math.max(bmiVal, 0), 40); const xp = x.getPixelForValue(clampedBMI); const yT = y.top, yB = y.bottom; ctx.save(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.moveTo(xp, yT - 4); ctx.lineTo(xp, yB + 4); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(xp, yT - 4); ctx.lineTo(xp - 5, yT - 13); ctx.lineTo(xp + 5, yT - 13); ctx.closePath(); ctx.fill(); ctx.font = 'bold 10px Orbitron,sans-serif'; ctx.fillStyle = '#00ffff'; ctx.textAlign = 'center'; ctx.shadowColor = '#00ffff'; ctx.shadowBlur = 8; ctx.fillText('YOU: ' + bmiVal, xp, yT - 18); ctx.restore(); } }]
+                });
+
+                // ── 6. Feature Importance
+                resetChart('featImp');
+                if (data.feat_importance) {
+                    document.getElementById('featImpMsg').style.display = 'none'; document.getElementById('featImpChart').style.display = 'block';
+                    const fiLabels = Object.keys(data.feat_importance).sort((a,b) => data.feat_importance[b] - data.feat_importance[a]);
+                    const fiVals = fiLabels.map(k => data.feat_importance[k]);
+                    const fiColors = fiVals.map(v => `rgba(${Math.round(255*(v/Math.max(...fiVals)))}, 255, ${Math.round(255*(1-v/Math.max(...fiVals)))}, 0.75)`);
+                    charts['featImp'] = new Chart(document.getElementById('featImpChart'), { type: 'bar', data: { labels: fiLabels, datasets: [{ label: 'Importance %', data: fiVals, backgroundColor: fiColors, borderColor: fiColors.map(c => c.replace('0.75','1')), borderWidth: 1.2, borderRadius: 4 }] }, options: { indexAxis: 'y', plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ` ${c.raw.toFixed(2)}%` } } }, scales: { x: { grid: { color: 'rgba(0,255,255,0.07)' }, ticks: { color: '#b0bec5', callback: v => v + '%' } }, y: { grid: { display: false }, ticks: { color: '#b0bec5' } } } } });
+                } else {
+                    document.getElementById('featImpChart').style.display = 'none'; document.getElementById('featImpMsg').style.display = 'block';
+                }
+
+                // ── 7. Sensitivity
+                resetChart('sens');
+                if (data.sensitivity) {
+                    const sensLabels = Object.keys(data.sensitivity).sort((a,b) => Math.max(Math.abs(data.sensitivity[b].up), Math.abs(data.sensitivity[b].down)) - Math.max(Math.abs(data.sensitivity[a].up), Math.abs(data.sensitivity[a].down)));
+                    const upVals = sensLabels.map(k => data.sensitivity[k].up); const downVals = sensLabels.map(k => data.sensitivity[k].down);
+                    charts['sens'] = new Chart(document.getElementById('sensitivityChart'), { type: 'bar', data: { labels: sensLabels, datasets: [{ label: '+10% change → kcal delta', data: upVals, backgroundColor: upVals.map(v => v >= 0 ? 'rgba(105,240,174,0.75)' : 'rgba(255,82,82,0.75)'), borderColor: upVals.map(v => v >= 0 ? '#69f0ae' : '#ff5252'), borderWidth: 1.2, borderRadius: 3 }, { label: '-10% change → kcal delta', data: downVals, backgroundColor: downVals.map(v => v >= 0 ? 'rgba(100,181,246,0.65)' : 'rgba(255,167,38,0.75)'), borderColor: downVals.map(v => v >= 0 ? '#64b5f6' : '#ffa726'), borderWidth: 1.2, borderRadius: 3 }] }, options: { indexAxis: 'y', plugins: { legend: { labels: { color: '#b0bec5', boxWidth: 10, font: { size: 9 } } }, tooltip: { callbacks: { label: c => ` ${c.raw > 0 ? '+' : ''}${c.raw} kcal` } } }, scales: { x: { grid: { color: 'rgba(0,255,255,0.07)' }, ticks: { color: '#b0bec5', callback: v => (v > 0 ? '+' : '') + v + ' kcal' } }, y: { grid: { display: false }, ticks: { color: '#b0bec5' } } } } });
+                }
+
+                // ── 8. SHAP
+                resetChart('shap');
+                if (data.shap_values) {
+                    document.getElementById('shapMsg').style.display = 'none'; document.getElementById('shapChart').style.display = 'block';
+                    const shapLabels = Object.keys(data.shap_values).sort((a,b) => Math.abs(data.shap_values[b]) - Math.abs(data.shap_values[a]));
+                    const shapVals = shapLabels.map(k => data.shap_values[k]);
+                    charts['shap'] = new Chart(document.getElementById('shapChart'), { type: 'bar', data: { labels: shapLabels, datasets: [{ label: 'Contribution to Prediction (kcal)', data: shapVals, backgroundColor: shapVals.map(v => v >= 0 ? 'rgba(255,82,82,0.75)' : 'rgba(100,181,246,0.65)'), borderColor: shapVals.map(v => v >= 0 ? '#ff5252' : '#64b5f6'), borderWidth: 1.2, borderRadius: 3 }] }, options: { indexAxis: 'y', plugins: { legend: { labels: { color: '#b0bec5', boxWidth: 10, font: { size: 9 } } }, tooltip: { callbacks: { label: c => ` ${c.raw > 0 ? '+' : ''}${c.raw} kcal` } }, title: { display: true, text: `Base Value (Avg): ${data.shap_expected} kcal  →  Prediction: ${kcal} kcal`, color: '#e0e0e0', font: { size: 11, family: 'Orbitron, sans-serif' } } }, scales: { x: { grid: { color: 'rgba(0,255,255,0.07)' }, ticks: { color: '#b0bec5', callback: v => (v > 0 ? '+' : '') + v + ' kcal' } }, y: { grid: { display: false }, ticks: { color: '#b0bec5' } } } } });
+                } else {
+                    document.getElementById('shapChart').style.display = 'none'; document.getElementById('shapMsg').style.display = 'block';
+                }
+                
+                document.getElementById('results-wrapper').style.display = 'block';
+                document.getElementById('results-anchor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            // Initialization logic for SSR if values exist on initial load
+            {% if calories_burned %}
+                const initialData = {
+                    calories_burned: {{ calories_burned }},
+                    selected_model: "{{ selected_model }}",
+                    selected_metrics: {{ selected_metrics | tojson | safe if selected_metrics else "null" }},
+                    form_data: {{ form_data | tojson | safe }},
+                    feat_importance: {{ feat_importance | safe }},
+                    sensitivity: {{ sensitivity | safe }},
+                    shap_values: {{ shap_values | safe }},
+                    shap_expected: {{ shap_expected | safe }}
+                };
+                renderDashboard(initialData);
+            {% endif %}
+
+        </script>
+
+    <script>
+        // ── BMI Auto-calculation ─────────────────────────────────────────────
+        const weightInput  = document.getElementById('weight');
+        const heightInput  = document.getElementById('height');
+        const bmiInput     = document.getElementById('bmi');
+        const bmiCategory  = document.getElementById('bmi-category');
+        const bmiRangeHint = document.getElementById('bmi-range-hint');
+
+        function getBMICategory(bmi) {
+            if (bmi < 18.5) return { label: '⬇ Underweight',  color: '#64b5f6' };
+            if (bmi < 25.0) return { label: '✔ Normal weight', color: '#69f0ae' };
+            if (bmi < 30.0) return { label: '⬆ Overweight',   color: '#ffca28' };
+            return               { label: '⚠ Obese',           color: '#ff7043' };
+        }
+
+        function calculateBMI() {
+            const weight = parseFloat(weightInput.value);
+            const height = parseFloat(heightInput.value);
+
+            if (weight > 0 && height > 0.3) {
+                const bmi = weight / (height * height);
+                bmiInput.value = bmi.toFixed(2);
+
+                // Show category
+                const cat = getBMICategory(bmi);
+                bmiCategory.textContent  = cat.label;
+                bmiCategory.style.color  = cat.color;
+
+                // Update hint text to show computed value context
+                bmiRangeHint.textContent = `\u24d8 ${weight}kg \u00f7 ${height}m\u00b2 = ${bmi.toFixed(2)}`;
+            } else {
+                bmiInput.value           = '';
+                bmiCategory.textContent  = '';
+                bmiRangeHint.textContent = '\u24d8 Auto-filled from Weight \u00f7 Height\u00b2';
+            }
+        }
+
+        weightInput.addEventListener('input', calculateBMI);
+        heightInput.addEventListener('input', calculateBMI);
+
+        // Run on page load if values are already present (after form error repopulation)
+        calculateBMI();
+
+        // ── Input range live validation highlight ────────────────────────────
+        // Turn border red if user types an out-of-range value
+        document.querySelectorAll('input[min], input[max]').forEach(input => {
+            input.addEventListener('input', function () {
+                if (this.readOnly) return;   // skip BMI field
+                const val = parseFloat(this.value);
+                const min = parseFloat(this.min);
+                const max = parseFloat(this.max);
+                const hint = this.parentElement.querySelector('.range-hint');
+
+                if (this.value === '') {
+                    this.style.borderColor = '';
+                    if (hint) hint.style.color = '';
+                    return;
+                }
+                if (val < min || val > max) {
+                    this.style.borderColor = '#ff5252';
+                    this.style.boxShadow   = '0 0 10px rgba(255,82,82,0.5)';
+                    if (hint) {
+                        hint.style.color      = '#ff7043';
+                        hint.style.textShadow = '0 0 6px rgba(255,82,82,0.5)';
+                    }
+                } else {
+                    this.style.borderColor = '#69f0ae';
+                    this.style.boxShadow   = '0 0 8px rgba(105,240,174,0.35)';
+                    if (hint) {
+                        hint.style.color      = '#69f0ae';
+                        hint.style.textShadow = '0 0 6px rgba(105,240,174,0.4)';
+                    }
+                }
+            });
+        });
+
+        // ── Show Loading Spinner on Submit ───────────────────────────────────
+        document.getElementById('main-form').addEventListener('submit', function() {
+            document.getElementById('loading-overlay').style.display = 'flex';
+        });
+
+
+    </script>
+</body>
+</html>

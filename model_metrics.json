@@ -1,0 +1,38 @@
+{
+  "XGBoost": {
+    "r2": 0.9965,
+    "mae": 12.18,
+    "rmse": 16.97,
+    "mape": 1.38,
+    "evs": 0.9966
+  },
+  "Random Forest": {
+    "r2": 0.9705,
+    "mae": 37.55,
+    "rmse": 49.57,
+    "mape": 4.17,
+    "evs": 0.9708
+  },
+  "Extra Trees": {
+    "r2": 0.9667,
+    "mae": 41.48,
+    "rmse": 52.67,
+    "mape": 4.66,
+    "evs": 0.9669
+  },
+  "Gradient Boosting": {
+    "r2": 0.9947,
+    "mae": 15.24,
+    "rmse": 21.06,
+    "mape": 1.68,
+    "evs": 0.9947
+  },
+  "Stacking": {
+    "r2": 0.9965,
+    "mae": 12.35,
+    "rmse": 16.98,
+    "mape": 1.4,
+    "evs": 0.9966
+  },
+  "best_model": "XGBoost"
+}
